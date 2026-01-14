@@ -3,9 +3,9 @@ package cmd
 import (
 	"strconv"
 
+	"github.com/SaroarShahan/event-management/api/routes"
 	"github.com/SaroarShahan/event-management/config"
 	"github.com/SaroarShahan/event-management/infra/database"
-	"github.com/SaroarShahan/event-management/routes"
 	"github.com/gin-gonic/gin"
 )
 
