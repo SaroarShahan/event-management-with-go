@@ -4,6 +4,7 @@ import (
 	"errors"
 
 	"github.com/SaroarShahan/event-management/infra/database"
+	"github.com/SaroarShahan/event-management/internals"
 	"github.com/SaroarShahan/event-management/utils"
 )
 
@@ -24,7 +25,7 @@ func (usr *User) SaveUserHandler() error {
 
 	defer stmt.Close()
 
-	hashedPassword, err := utils.HashPassword(usr.Password)
+	hashedPassword, err := internals.HashPassword(usr.Password)
 
 	if err != nil {
 		return err

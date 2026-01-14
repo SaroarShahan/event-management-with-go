@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/SaroarShahan/event-management/api/handlers"
-	"github.com/SaroarShahan/event-management/utils"
+	"github.com/SaroarShahan/event-management/internals"
 )
 
 type SignupRequest struct {
@@ -85,7 +85,7 @@ func Login(context *gin.Context) {
 		return
 	}
 
-	token, err := utils.GenerateToken(user.Email, user.ID)
+	token, err := internals.GenerateToken(user.Email, user.ID)
 
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
