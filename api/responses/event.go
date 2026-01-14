@@ -101,10 +101,22 @@ func UpdateEvent(context *gin.Context) {
 		return
 	}
 
-	if _, err = handlers.GetEventHandler(id); err != nil {
+	userId := context.GetInt64("userId")
+	event, err := handlers.GetEventHandler(id)
+
+	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{
 			"status": false,
 			"message": "Event not found",
+			"data": nil,
+		})
+		return
+	}
+
+	if event.UserID != userId {
+		context.JSON(http.StatusForbidden, gin.H{
+			"status": false,
+			"message": "You are not authorized to update this event",
 			"data": nil,
 		})
 		return
@@ -154,12 +166,22 @@ func DeleteEvent(context *gin.Context) {
 		return
 	}
 
-	_, err = handlers.GetEventHandler(id)
+	userId := context.GetInt64("userId")
+	event, err := handlers.GetEventHandler(id)
 
 	if err != nil {
 		context.JSON(http.StatusNotFound, gin.H{
 			"status": false,
 			"message": "Event not found",
+			"data": nil,
+		})
+		return
+	}
+
+	if event.UserID != userId {
+		context.JSON(http.StatusForbidden, gin.H{
+			"status": false,
+			"message": "You are not authorized to delete this event",
 			"data": nil,
 		})
 		return
