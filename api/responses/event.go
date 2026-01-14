@@ -22,8 +22,10 @@ func CreateEvent(context *gin.Context) {
 		return
 	}
 
-	createdEvent, err := handlers.CreateEventHandler(event)
-	if err != nil {
+	userId := context.GetInt64("userId")
+	event.UserID = userId
+	
+	if err := event.SaveEventsHandler(); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"status": false,
 			"message": "Failed to create event",
@@ -35,7 +37,7 @@ func CreateEvent(context *gin.Context) {
 	context.JSON(http.StatusCreated, gin.H{
 		"status": true,
 		"message": "Event has been created successfully!",
-		"data": createdEvent,
+		"data": event,
 	})
 }
 

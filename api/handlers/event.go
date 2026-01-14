@@ -15,7 +15,7 @@ type Event struct {
 	UserID int64 `json:"user_id"`
 }
 
-func (evt Event) SaveEventsHandler() error {
+func (evt *Event) SaveEventsHandler() error {
 	query := `INSERT INTO events (name, description, location, datetime, user_id)
 	VALUES (?, ?, ?, ?, ?)`
 	stmt, err := database.DB.Prepare(query)
