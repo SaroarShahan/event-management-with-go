@@ -3,7 +3,6 @@ package handlers
 import (
 	"errors"
 	"time"
-	"fmt"
 
 	"github.com/SaroarShahan/event-management/infra/database"
 	"gorm.io/gorm"
@@ -43,7 +42,7 @@ func GetAllEventsHandler() ([]Event, error) {
 
 func GetEventHandler(id int64) (*Event, error) {
 	var event Event
-	fmt.Println("id ~~>", id)
+	
 	if err := database.DB.Take(&event, id).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("event not found")

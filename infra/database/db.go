@@ -28,7 +28,6 @@ func NewConnection() {
 	db, err := gorm.Open(postgres.Open(dbSource), &gorm.Config{})
 
 	if err != nil {
-		fmt.Println("eeeeee ~~>", err)
 		panic("Could not connect to database.")
 	}
 
