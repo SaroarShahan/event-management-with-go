@@ -65,34 +65,6 @@ func GetAllEventsHandler() ([]Event, error) {
 
 }
 
-func CreateEventHandler(event Event) (*Event, error) {
-	query := `INSERT INTO events (name, description, location, datetime, user_id)
-	VALUES (?, ?, ?, ?, ?)`
-	stmt, err := database.DB.Prepare(query)
-
-	if err != nil {
-		return nil, err
-	}
-
-	defer stmt.Close()
-
-	result, err := stmt.Exec(event.Name, event.Description, event.Location, event.Datetime, event.UserID)
-
-	if err != nil {
-		return nil, err
-	}
-
-	id, err := result.LastInsertId()
-
-	if err != nil {
-		return nil, err
-	}
-
-	event.ID = id
-	
-	return &event, nil
-}
-
 func GetEventHandler(id int64) (*Event, error) {
 	query := `SELECT * FROM events WHERE id = ?`
 	row := database.DB.QueryRow(query, id)
