@@ -112,3 +112,33 @@ func DeleteEventHandler(id int64) error {
 
 	return nil
 }
+
+func (event Event) RegisterEventHandler(userID int64) error {
+	query := `INSERT INTO registrations (user_id, event_id) VALUES (?, ?)`
+	stmt, err := database.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(event.ID, userID)
+
+	return err
+}
+
+func (event Event) DeleteEventRegistrationHandler(userID int64) error {
+	query := `DELETE FROM registrations WHERE event_id = ? AND user_id = ?`
+	stmt, err := database.DB.Prepare(query)
+
+	if err != nil {
+		return err
+	}
+
+	defer stmt.Close()
+
+	_, err = stmt.Exec(event.ID, userID)
+
+	return err
+}

@@ -204,3 +204,75 @@ func DeleteEvent(context *gin.Context) {
 		"data": nil,
 	})
 }
+
+func RegisterEvent(context *gin.Context) {
+	userId := context.GetInt64("userId")
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"status": false,
+			"message": "Invalid event ID",
+			"data": nil,
+		})
+		return
+	}
+
+	event, err := handlers.GetEventHandler(eventId)
+
+	if err != nil {
+		context.JSON(http.StatusNotFound, gin.H{
+			"status": false,
+			"message": "Event not found",
+			"data": nil,
+		})
+		return
+	}
+
+	if err := event.RegisterEventHandler(userId); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"status": false,
+			"message": "Failed to register for event",
+			"data": nil,
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"status": true,
+		"message": "Successfully registered for the event!",
+		"data": nil,
+	})
+}
+
+func DeleteEventRegistration(context *gin.Context) {
+	userId := context.GetInt64("userId")
+	eventId, err := strconv.ParseInt(context.Param("id"), 10, 64)
+
+	if err != nil {
+		context.JSON(http.StatusBadRequest, gin.H{
+			"status": false,
+			"message": "Invalid event ID",
+			"data": nil,
+		})
+		return
+	}
+
+	var event handlers.Event
+	event.ID = eventId
+
+	if err := event.DeleteEventRegistrationHandler(userId); err != nil {
+		context.JSON(http.StatusInternalServerError, gin.H{
+			"status": false,
+			"message": "Failed to delete event registration",
+			"data": nil,
+		})
+		return
+	}
+
+	context.JSON(http.StatusOK, gin.H{
+		"status": true,
+		"message": "Successfully deleted event registration!",
+		"data": nil,
+	})
+}
