@@ -1,78 +1,53 @@
 package handlers
 
 import (
+	"errors"
 	"time"
+	"fmt"
 
 	"github.com/SaroarShahan/event-management/infra/database"
+	"gorm.io/gorm"
 )
 
 type Event struct {
-	ID 	int64    `json:"id"`
-	Name string `json:"name"`
-	Description string `json:"description"`
-	Location string `json:"location"`
-	Datetime time.Time `json:"datetime"`
-	UserID int64 `json:"user_id"`
+	gorm.Model
+	Name        string    `json:"name"`
+	Description string    `json:"description"`
+	Location    string    `json:"location"`
+	DateTime    time.Time `json:"datetime"`
+	UserID      *int64     `json:"user_id"`
+	User        User      `json:"-" gorm:"foreignKey:UserID"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
 }
 
 func (evt *Event) SaveEventsHandler() error {
-	query := `INSERT INTO events (name, description, location, datetime, user_id)
-	VALUES (?, ?, ?, ?, ?)`
-	stmt, err := database.DB.Prepare(query)
-
-	if err != nil {
+	if err := database.DB.Create(evt).Error; err != nil {
 		return err
 	}
-
-	defer stmt.Close()
-
-	result, err := stmt.Exec(evt.Name, evt.Description, evt.Location, evt.Datetime, evt.UserID)
-
-	if err != nil {
-		return err
-	}
-
-	id, err := result.LastInsertId()
-	evt.ID = id
-
-	return err
+	return nil
 }
 
 func GetAllEventsHandler() ([]Event, error) {
-	query := `SELECT * FROM events`
-	rows, err := database.DB.Query(query)
-
-	if err != nil {
+	var events []Event
+	if err := database.DB.Find(&events).Error; err != nil {
 		return nil, err
 	}
-
-	defer rows.Close()
-
-	events := make([]Event, 0)
-
-	for rows.Next() {
-		var evt Event
-		err := rows.Scan(&evt.ID, &evt.Name, &evt.Description, &evt.Location, &evt.Datetime, &evt.UserID)
-
-		if err != nil {
-			return nil, err
-		}
-
-		events = append(events, evt)
+	
+	if events == nil {
+		events = make([]Event, 0)
 	}
-
+	
 	return events, nil
-
 }
 
 func GetEventHandler(id int64) (*Event, error) {
-	query := `SELECT * FROM events WHERE id = ?`
-	row := database.DB.QueryRow(query, id)
-
 	var event Event
-	err := row.Scan(&event.ID, &event.Name, &event.Description, &event.Location, &event.Datetime, &event.UserID)
-
-	if err != nil {
+	fmt.Println("id ~~>", id)
+	if err := database.DB.Take(&event, id).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("event not found")
+		}
 		return nil, err
 	}
 
@@ -80,65 +55,23 @@ func GetEventHandler(id int64) (*Event, error) {
 }
 
 func UpdateEventHandler(event Event) error {
-	query := `UPDATE events SET name = ?, description = ?, location = ?, datetime = ? WHERE id = ?`
-	stmt, err := database.DB.Prepare(query)
-	
-	if err != nil {
+	if err := database.DB.Model(&Event{}).Where("id = ?", event.ID).Updates(event).Error; err != nil {
 		return err
 	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(event.Name, event.Description, event.Location, event.Datetime, event.ID)
-
-	return err
+	return nil
 }
 
 func DeleteEventHandler(id int64) error {
-	query := `DELETE FROM events WHERE id = ?`
-	stmt, err := database.DB.Prepare(query)
-
-	if err != nil {
+	if err := database.DB.Delete(&Event{}, id).Error; err != nil {
 		return err
 	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(id)
-
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (event Event) RegisterEventHandler(userID int64) error {
-	query := `INSERT INTO registrations (user_id, event_id) VALUES (?, ?)`
-	stmt, err := database.DB.Prepare(query)
-
-	if err != nil {
-		return err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(event.ID, userID)
-
-	return err
+	return CreateRegistration(event.ID, userID)
 }
 
 func (event Event) DeleteEventRegistrationHandler(userID int64) error {
-	query := `DELETE FROM registrations WHERE event_id = ? AND user_id = ?`
-	stmt, err := database.DB.Prepare(query)
-
-	if err != nil {
-		return err
-	}
-
-	defer stmt.Close()
-
-	_, err = stmt.Exec(event.ID, userID)
-
-	return err
+	return RemoveRegistration(event.ID, userID)
 }

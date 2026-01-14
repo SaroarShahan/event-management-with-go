@@ -9,7 +9,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-
 func CreateEvent(context *gin.Context) {
 	var event handlers.Event
 
@@ -23,8 +22,8 @@ func CreateEvent(context *gin.Context) {
 	}
 
 	userId := context.GetInt64("userId")
-	event.UserID = userId
-	
+	event.UserID = &userId
+
 	if err := event.SaveEventsHandler(); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"status": false,
@@ -113,7 +112,7 @@ func UpdateEvent(context *gin.Context) {
 		return
 	}
 
-	if event.UserID != userId {
+	if event.UserID == nil || *event.UserID != userId {
 		context.JSON(http.StatusForbidden, gin.H{
 			"status": false,
 			"message": "You are not authorized to update this event",
@@ -133,10 +132,10 @@ func UpdateEvent(context *gin.Context) {
 		return
 	}
 
-	updatedEvent.ID = id
+	updatedEvent.ID = uint(id)
 
 	err = handlers.UpdateEventHandler(updatedEvent)
-	
+
 	if err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"status": false,
@@ -178,7 +177,7 @@ func DeleteEvent(context *gin.Context) {
 		return
 	}
 
-	if event.UserID != userId {
+	if event.UserID == nil || *event.UserID != userId {
 		context.JSON(http.StatusForbidden, gin.H{
 			"status": false,
 			"message": "You are not authorized to delete this event",
@@ -259,7 +258,7 @@ func DeleteEventRegistration(context *gin.Context) {
 	}
 
 	var event handlers.Event
-	event.ID = eventId
+	event.ID = uint(eventId)
 
 	if err := event.DeleteEventRegistrationHandler(userId); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{

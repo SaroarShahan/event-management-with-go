@@ -10,24 +10,22 @@ import (
 )
 
 type SignupRequest struct {
-	Username string `json:"username"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Username string `json:"username" binding:"required"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 type LoginRequest struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" binding:"required,email"`
+	Password string `json:"password" binding:"required"`
 }
 
 func Signup(context *gin.Context) {
 	var req SignupRequest
-	
+
 	if err := context.ShouldBindJSON(&req); err != nil {
 		context.JSON(http.StatusBadRequest, gin.H{
-			"status": false,
-			"message": "Invalid request payload",
-			"data": nil,
+			"error": "Invalid request",
 		})
 		return
 	}
@@ -39,68 +37,65 @@ func Signup(context *gin.Context) {
 	}
 
 	if err := user.SaveUserHandler(); err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"status": false,
-			"message": "Failed to create user",
-			"data": nil,
+		context.JSON(http.StatusBadRequest, gin.H{
+			"error": err.Error(),
 		})
 		return
 	}
 
 	context.JSON(http.StatusCreated, gin.H{
-		"status": true,
-		"message": "User has been created successfully!",
-		"data": user,
+		"message": "User has been created successfully.",
+		"user": gin.H{
+			"id": user.ID,
+			"username": user.Username,
+			"email": user.Email,
+		},
 	})
 }
 
-func Login(context *gin.Context) {
+func Login(c *gin.Context) {
 	var req LoginRequest
-	
-	if err := context.ShouldBindJSON(&req); err != nil {
-		context.JSON(http.StatusBadRequest, gin.H{
-			"status": false,
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"status":  false,
 			"message": "Invalid request payload",
-			"data": nil,
+			"data":    nil,
 		})
 		return
 	}
 
-	if err := handlers.ValidateCredentialsHanlder(req.Email, req.Password); err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{
-			"status": false,
-			"message": "Invalid email or password",
-			"data": nil,
-		})
-		return
-	}
 
-	user, err := handlers.GetUserByEmailHandler(req.Email)
+	user, err := handlers.ValidateCredentialsHandler(req.Email, req.Password)
 	if err != nil {
-		context.JSON(http.StatusUnauthorized, gin.H{
-			"status": false,
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"status":  false,
 			"message": "Invalid email or password",
-			"data": nil,
+			"data":    nil,
 		})
 		return
 	}
 
-	token, err := internals.GenerateToken(user.Email, user.ID)
-
+	token, err := internals.GenerateToken(user.Email, int64(user.ID))
 	if err != nil {
-		context.JSON(http.StatusInternalServerError, gin.H{
-			"status": false,
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"status":  false,
 			"message": "Could not authenticate user.",
-			"data": nil,
+			"data":    nil,
 		})
 		return
 	}
 
-	context.JSON(http.StatusOK, gin.H{
-		"status": true,
+	c.JSON(http.StatusOK, gin.H{
+		"status":  true,
 		"message": "Login successful!",
 		"data": gin.H{
 			"token": token,
+			"user": gin.H{
+				"id":       user.ID,
+				"username": user.Username,
+				"email":    user.Email,
+			},
 		},
 	})
 }

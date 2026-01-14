@@ -10,7 +10,9 @@ import (
 )
 
 func Server() {
-	database.InitDB()
+	database.NewConnection()
+	migration()
+
 	config := config.GetConfig()
 	app := gin.Default()
 

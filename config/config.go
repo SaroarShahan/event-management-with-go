@@ -14,6 +14,11 @@ type Config struct {
 	Host string
 	SecretKey string
 	HttpPort int
+	DBName string
+	DBUser string
+	DBPassword string
+	DBHost string
+	DBPort int
 }
 
 var configurations Config
@@ -28,7 +33,11 @@ func loadConfig() {
 	host := os.Getenv("HOST")
 	secretKey := os.Getenv("SECRET_KEY")
 	portStr := os.Getenv("PORT")
-	
+	dbName := os.Getenv("DB_NAME")
+	dbUser := os.Getenv("DB_USER")
+	dbPassword := os.Getenv("DB_PASSWORD")
+	dbHost := os.Getenv("DB_HOST")
+	dbPortStr := os.Getenv("DB_PORT")
 
 	if version == "" {
 		fmt.Println("VERSION not set in .env file")
@@ -61,12 +70,44 @@ func loadConfig() {
 		os.Exit(1)
 	}
 
+	if dbName == "" {
+		fmt.Println("DB_NAME not set in .env file")
+		os.Exit(1)
+	}
+
+	if dbUser == "" {
+		fmt.Println("DB_USER not set in .env file")
+		os.Exit(1)
+	}
+
+	if dbPassword == "" {
+		fmt.Println("DB_PASSWORD not set in .env file")
+		os.Exit(1)
+	}
+
+	if dbHost == "" {
+		fmt.Println("DB_HOST not set in .env file")
+		os.Exit(1)
+	}
+
+	httpDBPort, err := strconv.ParseInt(dbPortStr, 10, 64)
+
+	if err != nil {
+		fmt.Println("DB_PORT not set in .env file")
+		os.Exit(1)
+	}
+
 	configurations = Config{
 		Version: version,
 		ServiceName: serviceName,
 		Host: host,
 		SecretKey: secretKey,
 		HttpPort: int(httpPort),
+		DBName: dbName,
+		DBUser: dbUser,
+		DBPassword: dbPassword,
+		DBHost: dbHost,
+		DBPort: int(httpDBPort),
 	}
 }
 
