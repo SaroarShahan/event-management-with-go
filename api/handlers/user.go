@@ -1,4 +1,4 @@
-package models
+package handlers
 
 import (
 	"errors"
@@ -14,7 +14,7 @@ type User struct {
 	Password string `json:"-"`
 }
 
-func (usr *User) Save() error {
+func (usr *User) SaveUserHandler() error {
 	query := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
 	stmt, err := database.DB.Prepare(query)
 
@@ -42,7 +42,7 @@ func (usr *User) Save() error {
 	return err
 }
 
-func GetUserByEmail(email string) (*User, error) {
+func GetUserByEmailHandler(email string) (*User, error) {
 	query := `SELECT * FROM users WHERE email = ?`
 	row := database.DB.QueryRow(query, email)
 
@@ -56,7 +56,7 @@ func GetUserByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-func ValidateCredentials(email string, password string)  error {
+func ValidateCredentialsHanlder(email string, password string)  error {
 	query := `SELECT password FROM users WHERE email = ?`
 	row := database.DB.QueryRow(query, email)
 

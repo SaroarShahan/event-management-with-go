@@ -1,4 +1,4 @@
-package models
+package handlers
 
 import (
 	"time"
@@ -15,7 +15,7 @@ type Event struct {
 	UserID int64 `json:"user_id"`
 }
 
-func (evt Event) Save() error {
+func (evt Event) SaveEventsHandler() error {
 	query := `INSERT INTO events (name, description, location, datetime, user_id)
 	VALUES (?, ?, ?, ?, ?)`
 	stmt, err := database.DB.Prepare(query)
@@ -38,7 +38,7 @@ func (evt Event) Save() error {
 	return err
 }
 
-func GetAllEvents() ([]Event, error) {
+func GetAllEventsHandler() ([]Event, error) {
 	query := `SELECT * FROM events`
 	rows, err := database.DB.Query(query)
 
@@ -65,7 +65,7 @@ func GetAllEvents() ([]Event, error) {
 
 }
 
-func CreateEvent(event Event) (*Event, error) {
+func CreateEventHandler(event Event) (*Event, error) {
 	query := `INSERT INTO events (name, description, location, datetime, user_id)
 	VALUES (?, ?, ?, ?, ?)`
 	stmt, err := database.DB.Prepare(query)
@@ -93,7 +93,7 @@ func CreateEvent(event Event) (*Event, error) {
 	return &event, nil
 }
 
-func GetEvent(id int64) (*Event, error) {
+func GetEventHandler(id int64) (*Event, error) {
 	query := `SELECT * FROM events WHERE id = ?`
 	row := database.DB.QueryRow(query, id)
 
@@ -107,7 +107,7 @@ func GetEvent(id int64) (*Event, error) {
 	return &event, nil
 }
 
-func UpdateEvent(event Event) error {
+func UpdateEventHandler(event Event) error {
 	query := `UPDATE events SET name = ?, description = ?, location = ?, datetime = ? WHERE id = ?`
 	stmt, err := database.DB.Prepare(query)
 	
@@ -122,7 +122,7 @@ func UpdateEvent(event Event) error {
 	return err
 }
 
-func DeleteEvent(id int64) error {
+func DeleteEventHandler(id int64) error {
 	query := `DELETE FROM events WHERE id = ?`
 	stmt, err := database.DB.Prepare(query)
 

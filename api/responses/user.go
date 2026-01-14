@@ -1,11 +1,11 @@
-package routes
+package responses
 
 import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/SaroarShahan/event-management/models"
+	"github.com/SaroarShahan/event-management/api/handlers"
 	"github.com/SaroarShahan/event-management/utils"
 )
 
@@ -20,7 +20,7 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
-func signup(context *gin.Context) {
+func Signup(context *gin.Context) {
 	var req SignupRequest
 	
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -32,13 +32,13 @@ func signup(context *gin.Context) {
 		return
 	}
 
-	user := models.User{
+	user := handlers.User{
 		Username: req.Username,
 		Email:    req.Email,
 		Password: req.Password,
 	}
 
-	if err := user.Save(); err != nil {
+	if err := user.SaveUserHandler(); err != nil {
 		context.JSON(http.StatusInternalServerError, gin.H{
 			"status": false,
 			"message": "Failed to create user",
@@ -54,7 +54,7 @@ func signup(context *gin.Context) {
 	})
 }
 
-func login(context *gin.Context) {
+func Login(context *gin.Context) {
 	var req LoginRequest
 	
 	if err := context.ShouldBindJSON(&req); err != nil {
@@ -66,7 +66,7 @@ func login(context *gin.Context) {
 		return
 	}
 
-	if err := models.ValidateCredentials(req.Email, req.Password); err != nil {
+	if err := handlers.ValidateCredentialsHanlder(req.Email, req.Password); err != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{
 			"status": false,
 			"message": "Invalid email or password",
@@ -75,7 +75,7 @@ func login(context *gin.Context) {
 		return
 	}
 
-	user, err := models.GetUserByEmail(req.Email)
+	user, err := handlers.GetUserByEmailHandler(req.Email)
 	if err != nil {
 		context.JSON(http.StatusUnauthorized, gin.H{
 			"status": false,
