@@ -12,6 +12,7 @@ type Config struct {
 	Version string
 	ServiceName string
 	Host string
+	SecretKey string
 	HttpPort int
 }
 
@@ -25,6 +26,7 @@ func loadConfig() {
 	version := os.Getenv("VERSION")
 	serviceName := os.Getenv("SERVICE_NAME")
 	host := os.Getenv("HOST")
+	secretKey := os.Getenv("SECRET_KEY")
 	portStr := os.Getenv("PORT")
 	
 
@@ -39,6 +41,11 @@ func loadConfig() {
 	}
 	if host == "" {
 		fmt.Println("HOST not set in .env file")
+		os.Exit(1)
+	}
+
+	if secretKey == "" {
+		fmt.Println("SECRET_KEY not set in .env file")
 		os.Exit(1)
 	}
 
@@ -58,6 +65,7 @@ func loadConfig() {
 		Version: version,
 		ServiceName: serviceName,
 		Host: host,
+		SecretKey: secretKey,
 		HttpPort: int(httpPort),
 	}
 }
