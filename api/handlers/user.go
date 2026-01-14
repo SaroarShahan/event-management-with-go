@@ -5,7 +5,6 @@ import (
 
 	"github.com/SaroarShahan/event-management/infra/database"
 	"github.com/SaroarShahan/event-management/internals"
-	"github.com/SaroarShahan/event-management/utils"
 )
 
 type User struct {
@@ -67,7 +66,7 @@ func ValidateCredentialsHanlder(email string, password string)  error {
 		return errors.New("Invalid email or password")
 	}
 
-	if err := utils.ComparePassword(storedHashedPassword, password); err != nil {
+	if err := internals.ComparePassword(storedHashedPassword, password); err != nil {
 		return errors.New("Invalid email or password")
 	}
 
